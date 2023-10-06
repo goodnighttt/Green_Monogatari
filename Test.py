@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 # 打开视频文件
 video_capture = cv2.VideoCapture('2.mp4')
@@ -33,6 +34,9 @@ frame_count = 0  # 用于计算当前帧数
 # 定义一个空的mask用于绘制轨迹
 mask = np.zeros_like(prev_frame)
 
+# 初始化存储特征点振幅的列表
+amplitudes = []
+
 while True:
     # 读取当前帧
     ret, frame = video_capture.read()
@@ -59,6 +63,10 @@ while True:
     # 合并光流轨迹和当前帧
     img = cv2.add(frame, mask)
 
+    # 计算并记录振幅
+    amplitude = np.max(np.linalg.norm(good_new - good_old, axis=1))
+    amplitudes.append(amplitude)
+
     # 显示结果
     cv2.imshow('Frame', img)
 
@@ -81,3 +89,10 @@ while True:
 # 释放资源
 video_capture.release()
 cv2.destroyAllWindows()
+
+# 绘制振幅随时间变化的折线图
+plt.plot(range(len(amplitudes)), amplitudes)
+plt.xlabel('帧数')
+plt.ylabel('振幅')
+plt.title('特征点振幅随时间变化')
+plt.show()
