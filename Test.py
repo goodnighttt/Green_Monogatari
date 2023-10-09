@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.signal import find_peaks
 
 # 打开视频文件
 video_capture = cv2.VideoCapture('2.mp4')
@@ -26,7 +28,7 @@ prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
 # 使用Shi-Tomasi角点检测获取初始的特征点位置
 # 调整qualityLevel以筛选出质量较高的特征点，范围为0到1
 # 调整minDistance以设置特征点之间的最小距离
-corners = cv2.goodFeaturesToTrack(prev_gray, maxCorners=100, qualityLevel=0.1, minDistance=10)
+corners = cv2.goodFeaturesToTrack(prev_gray, maxCorners=100, qualityLevel=0.01, minDistance=10)
 p0 = corners.reshape(-1, 1, 2)
 
 frame_count = 0  # 用于计算当前帧数
@@ -36,6 +38,10 @@ mask = np.zeros_like(prev_frame)
 
 # 初始化存储特征点振幅的列表
 amplitudes = []
+# 初始化存储振动频率的列表
+frequencies = []
+# 初始化存储特定特征点位置的列表
+feature_point_positions = []
 
 while True:
     # 读取当前帧
@@ -90,9 +96,36 @@ while True:
 video_capture.release()
 cv2.destroyAllWindows()
 
+sns.set()
+plt.rcParams['font.sans-serif']='SimHei'#设置中文显示，必须放在sns.set之后
+
 # 绘制振幅随时间变化的折线图
 plt.plot(range(len(amplitudes)), amplitudes)
 plt.xlabel('帧数')
 plt.ylabel('振幅')
 plt.title('特征点振幅随时间变化')
 plt.show()
+
+
+# 用FFT（快速傅里叶变换计算振动频率）
+# # 计算振动频率
+# # 假设帧率为30fps
+# fps = 30
+# amplitudes = np.array(amplitudes)
+# frequency = np.fft.fftfreq(amplitudes.shape[0], 1 / fps)
+# spectrum = np.fft.fft(amplitudes)
+# magnitude = np.abs(spectrum)
+# frequency = frequency[:len(frequency) // 2]
+# magnitude = magnitude[:len(magnitude) // 2]
+#
+# # 找到主要的振动频率
+# main_frequency_index = np.argmax(magnitude)
+# main_frequency = frequency[main_frequency_index]
+#
+# # 绘制频率谱
+# plt.plot(frequency, magnitude)
+# plt.xlabel('频率 (Hz)')
+# plt.ylabel('振幅')
+# plt.title('频率谱')
+# plt.show()
+
